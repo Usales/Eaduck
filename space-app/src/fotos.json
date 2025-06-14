@@ -1,0 +1,69 @@
+[
+  {
+    "id": 1,
+    "titulo": "Nebulosa Pistola",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-1.png"
+  },
+  {
+    "id": 2,
+    "titulo": "Galáxia de Andrómeda",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-2.png"
+  },
+  {
+    "id": 3,
+    "titulo": "Lua: quarto minguante",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-3.png"
+  },
+  {
+    "id": 4,
+    "titulo": "Grande Nuvem de Magalhães",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-4.png",
+    "tagId": 2
+  },
+  {
+    "id": 5,
+    "titulo": "Via Láctea",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-5.png",
+    "tagId": 2
+  },
+  {
+    "id": 6,
+    "titulo": "Ilustração",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-6.png",
+    "tagId": 4
+  },
+  {
+    "id": 7,
+    "titulo": "Céu estrelado",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-7.png",
+    "tagId": 1
+  },
+  {
+    "id": 8,
+    "titulo": "Ilustração",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-8.png",
+    "tagId": 1
+  },
+  {
+    "id": 9,
+    "titulo": "Ilustração",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-9.png",
+    "tagId": 1
+  },
+  {
+    "id": 10,
+    "titulo": "Ilustração",
+    "fonte": "NASA",
+    "path": "/imagens/galeria/foto-10.png",
+    "tagId": 1
+  }
+]
