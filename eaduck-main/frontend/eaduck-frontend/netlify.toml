@@ -1,8 +1,10 @@
 [build]
-  command = "npm run build"
-  publish = "dist/eaduck-frontend/browser"
+  command = "npm install --legacy-peer-deps && npm run build"
+  publish = "dist/eaduck-frontend"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200 
+
+  
