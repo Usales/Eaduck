@@ -1,0 +1,403 @@
+<app-sidebar></app-sidebar>
+<div class="ml-64 p-8 pt-28">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-white">Tarefas</h1>
+    <button *ngIf="isAdminOrTeacher" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all flex items-center gap-2" (click)="openCreateModal()">
+      <span class="material-icons">add</span>
+      Nova Tarefa
+    </button>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <div class="bg-[#232b3e] rounded-xl shadow-lg overflow-hidden">
+        <div class="p-4 border-b border-[#2d3650]">
+          <div class="flex items-center gap-4">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <span class="material-icons">search</span>
+              </span>
+              <input type="text" placeholder="Buscar tarefas..." class="w-full pl-10 pr-4 py-2 bg-[#1a2233] border border-[#2d3650] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <button class="p-2 text-gray-400 hover:text-white" (click)="toggleAlphabeticalSort()" [class.text-white]="isSortedAlphabetically">
+              <span class="material-icons">filter_list</span>
+            </button>
+          </div>
+        </div>
+        <div class="divide-y divide-[#2d3650]">
+          <div *ngFor="let task of filteredTasks" class="p-4 hover:bg-[#1a2233] transition-all">
+            <div class="flex items-start gap-4">
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center gap-2">
+                    <span [ngClass]="getTaskTypeColor(task.type)" class="p-1 rounded-lg">
+                      <span class="material-icons text-white text-sm">{{ getTaskTypeIcon(task.type) }}</span>
+                    </span>
+                    <ng-container *ngIf="editTaskId === task.id; else viewTitle">
+                      <input [(ngModel)]="editTitle" class="text-white bg-[#1a2233] border border-[#2d3650] rounded-lg px-2 py-1" />
+                    </ng-container>
+                    <ng-template #viewTitle>
+                      <h3 class="text-white font-semibold">{{ task.title }}</h3>
+                    </ng-template>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span [ngClass]="getTaskTypeColor(task.type)" class="px-2 py-1 rounded-full text-xs font-bold text-white">
+                      {{ getTaskTypeLabel(task.type) }}
+                    </span>
+                    <span [ngClass]="{
+                      'bg-yellow-500 text-black': getTaskStatus(task) === 'pendente',
+                      'bg-red-600 text-white': getTaskStatus(task) === 'atrasada',
+                      'bg-green-600 text-white': getTaskStatus(task) === 'concluida'
+                    }" class="px-2 py-1 rounded-full text-xs font-bold">
+                      {{ getTaskStatus(task) === 'pendente' ? 'Pendente' : (getTaskStatus(task) === 'atrasada' ? 'Atrasada' : 'Concluída') }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button *ngIf="isAdminOrTeacher && editTaskId !== task.id" (click)="deleteTask(task)" class="text-red-400 hover:text-red-600"><span class="material-icons">delete</span></button>
+                      <button *ngIf="isAdminOrTeacher && editTaskId !== task.id" (click)="openSubmissionsModal(task)" class="text-green-400 hover:text-green-600"><span class="material-icons">assignment_turned_in</span></button>
+                      <button *ngIf="!isAdminOrTeacher && editTaskId !== task.id && getTaskStatus(task) !== 'concluida'" (click)="openSubmitModal(task)" class="text-indigo-400 hover:text-indigo-600"><span class="material-icons">upload_file</span></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <ng-container *ngIf="editTaskId === task.id; else viewDesc">
+                    <textarea [(ngModel)]="editDescription" class="w-full text-white bg-[#1a2233] border border-[#2d3650] rounded-lg px-2 py-1"></textarea>
+                  </ng-container>
+                  <ng-template #viewDesc>
+                    <p class="text-gray-400 text-sm">{{ task.description }}</p>
+                  </ng-template>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-400">
+                  <div class="flex items-center gap-1">
+                    <span class="material-icons text-sm">event</span>
+                    <ng-container *ngIf="editTaskId === task.id; else viewDue">
+                      <input type="date" [(ngModel)]="editDueDate" class="text-white bg-[#1a2233] border border-[#2d3650] rounded-lg px-2 py-1" />
+                    </ng-container>
+                    <ng-template #viewDue>
+                      <span>{{ task.dueDate | date:'dd/MM/yyyy' }}</span>
+                    </ng-template>
+                  </div>
+                  <div *ngIf="currentUser?.role !== 'STUDENT'" class="flex items-center gap-2">
+                    <button (click)="openStudentsModal(task)" 
+                            class="inline-flex items-center px-2.5 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Ver Alunos ({{ getSubmissionsForTask(task.id).length }})
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="editTaskId === task.id" class="flex gap-2 mt-2">
+                  <button (click)="saveEdit(task)" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"><span class="material-icons text-sm">check</span>Salvar</button>
+                  <button (click)="cancelEdit()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"><span class="material-icons text-sm">close</span>Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-6">
+      <div class="bg-[#232b3e] rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Resumo</h3>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Total de Tarefas</span>
+            <span class="text-white font-semibold">{{ totalTasks }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Concluídas</span>
+            <span class="text-green-400 font-semibold">{{ totalConcluidas }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Pendentes</span>
+            <span class="text-yellow-400 font-semibold">{{ totalPendentes }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Atrasadas</span>
+            <span class="text-red-400 font-semibold">{{ totalAtrasadas }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-[#232b3e] rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Filtros</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">Status</label>
+            <select class="w-full bg-[#1a2233] border border-[#2d3650] rounded-lg text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" [(ngModel)]="filterStatus" (change)="applyFilters()">
+              <option value="all">Todos</option>
+              <option value="pendente">Pendentes</option>
+              <option value="concluida">Concluídas</option>
+              <option value="atrasada">Atrasadas</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">Sala</label>
+            <select class="w-full bg-[#1a2233] border border-[#2d3650] rounded-lg text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" [(ngModel)]="filterClassroomId" (change)="applyFilters()">
+              <option value="all">Todas</option>
+              <option *ngFor="let c of classrooms" [ngValue]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-2">Tipo</label>
+            <select class="w-full bg-[#1a2233] border border-[#2d3650] rounded-lg text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" [(ngModel)]="filterType" (change)="applyFilters()">
+              <option value="all">Todos</option>
+              <option value="TAREFA">Tarefas</option>
+              <option value="PROVA">Provas</option>
+              <option value="FORUM">Fóruns</option>
+              <option value="NOTIFICACAO">Notificações</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Nova Tarefa -->
+<div *ngIf="showCreateModal && isAdminOrTeacher" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="closeCreateModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <h2 class="text-xl font-bold text-white mb-4">Nova Tarefa</h2>
+    <form (ngSubmit)="createTask()" autocomplete="off">
+      <div class="mb-4">
+        <label class="block text-gray-400 mb-1">Título</label>
+        <input [(ngModel)]="taskForm.title" name="title" required class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]" />
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-400 mb-1">Descrição</label>
+        <textarea [(ngModel)]="taskForm.description" name="description" required class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-300 mb-1">Data de Entrega</label>
+        <input [(ngModel)]="taskForm.dueDate" name="dueDate" type="date" required [ngClass]="{'border-red-500': dueDateError}" class="w-full px-3 py-2 rounded bg-[#1a2233] text-white border border-[#2d3650] focus:outline-none" />
+        <div *ngIf="dueDateError" class="text-red-400 text-sm mt-1">Preencha a data de entrega corretamente.</div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-400 mb-1">Turma</label>
+        <select [(ngModel)]="taskForm.classroomId" name="classroomId" required class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]">
+          <option [ngValue]="undefined">Selecione a turma</option>
+          <option *ngFor="let c of classrooms" [ngValue]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-400 mb-1">Tipo</label>
+        <select [(ngModel)]="taskForm.type" name="type" required class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]">
+          <option value="TAREFA">Tarefa</option>
+          <option value="PROVA">Prova</option>
+          <option value="FORUM">Fórum</option>
+          <option value="NOTIFICACAO">Notificação</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button (click)="closeCreateModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Criar</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Fim Modal -->
+
+<!-- Modal de Submissões -->
+<div *ngIf="showSubmissionsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-2xl relative">
+    <button (click)="closeSubmissionsModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <h2 class="text-xl font-bold text-white mb-4">Submissões - {{ selectedTask?.title }}</h2>
+    <div *ngIf="filteredSubmissions.length === 0" class="text-gray-400">Nenhuma submissão encontrada.</div>
+    <table *ngIf="filteredSubmissions.length > 0" class="w-full text-white">
+      <thead>
+        <tr>
+          <th class="text-left py-2">Aluno</th>
+          <th class="text-left py-2">E-mail</th>
+          <th class="text-left py-2">Conteúdo</th>
+          <th class="text-left py-2">Arquivo</th>
+          <th class="text-left py-2">Nota</th>
+          <th class="text-left py-2">Feedback</th>
+          <th class="text-left py-2">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sub of filteredSubmissions">
+          <td>{{ sub.studentId }}</td>
+          <td>{{ sub.studentEmail }}</td>
+          <td>{{ sub.content }}</td>
+          <td>
+            <a *ngIf="sub.fileUrl" [href]="'http://localhost:8080' + (sub.fileUrl.startsWith('/') ? sub.fileUrl : '/' + sub.fileUrl)" target="_blank" class="text-blue-400 hover:text-blue-300 underline">
+              <span class="material-icons text-sm align-middle mr-1">file_download</span>
+              Download
+            </a>
+            <span *ngIf="!sub.fileUrl">-</span>
+          </td>
+          <td>
+            <span *ngIf="sub.grade !== undefined && sub.grade !== null" class="font-bold text-green-400">{{ sub.grade }}</span>
+            <span *ngIf="sub.grade === undefined || sub.grade === null">-</span>
+          </td>
+          <td>
+            <span *ngIf="sub.feedback" class="italic text-blue-300">{{ sub.feedback }}</span>
+            <span *ngIf="!sub.feedback">-</span>
+          </td>
+          <td>
+            <button *ngIf="isAdminOrTeacher" (click)="openEvalModal(sub)" class="text-yellow-400 hover:text-yellow-600" title="Avaliar submissão">
+              <span class="material-icons">rate_review</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- Fim Modal de Submissões -->
+
+<!-- Modal de Avaliação -->
+<div *ngIf="showEvalModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="closeEvalModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <h2 class="text-xl font-bold text-white mb-4">Avaliar Submissão</h2>
+    <div class="mb-4">
+      <label class="block text-gray-400 mb-1">Nota</label>
+      <input type="number" [(ngModel)]="evalGrade" min="0" max="10" step="0.1" class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]" />
+    </div>
+    <div class="mb-6">
+      <label class="block text-gray-400 mb-1">Feedback</label>
+      <textarea [(ngModel)]="evalFeedback" class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]"></textarea>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button (click)="closeEvalModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
+      <button (click)="saveEvaluation()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Salvar Avaliação</button>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal de Avaliação -->
+
+<!-- Modal de Submissão -->
+<div *ngIf="showSubmitModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="closeSubmitModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <h2 class="text-xl font-bold text-white mb-4">Enviar Tarefa</h2>
+    <form *ngIf="!submitSuccess" (ngSubmit)="submitTask()" class="space-y-4">
+      <div>
+        <label class="block text-gray-400 mb-1">Comentário (opcional)</label>
+        <textarea [(ngModel)]="submitContent" name="content" class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]"></textarea>
+      </div>
+      <div>
+        <label class="block text-gray-400 mb-1">Arquivo</label>
+        <input type="file" (change)="onFileSelected($event)" class="w-full px-3 py-2 rounded-lg bg-[#1a2233] text-white border border-[#2d3650]">
+        <div class="mt-2 text-gray-400 text-xs">
+          Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, ZIP, RAR.<br>
+          Tamanho máximo: 8MB.
+        </div>
+        <div *ngIf="fileError" class="mt-2 text-red-400 text-sm">{{ fileError }}</div>
+      </div>
+      <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all">
+        Enviar
+      </button>
+    </form>
+    <div *ngIf="submitSuccess" class="flex flex-col items-center justify-center py-8">
+      <span class="material-icons text-green-400 text-5xl mb-2">check_circle</span>
+      <div class="text-green-400 text-lg font-semibold mb-2">Tarefa enviada com sucesso!</div>
+      <div class="text-gray-300 text-sm text-center mb-4">Você receberá um e-mail de confirmação.<br>O professor será avisado e irá avaliar sua atividade em breve.</div>
+      <button (click)="closeSubmitModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all mt-2">Fechar</button>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal de Submissão -->
+
+<!-- Modal de Erro -->
+<div *ngIf="showErrorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="closeErrorModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <div class="flex flex-col items-center justify-center py-4">
+      <span class="material-icons text-red-400 text-5xl mb-2">error</span>
+      <div class="text-red-400 text-lg font-semibold mb-2">Erro ao excluir tarefa</div>
+      <div class="text-gray-300 text-sm text-center mb-4">{{ errorModalMessage }}</div>
+      <button (click)="closeErrorModal()" class="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:from-red-700 hover:to-pink-700 transition-all mt-2">Fechar</button>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal de Erro -->
+
+<!-- Modal de Sucesso Avaliação -->
+<div *ngIf="showEvalSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="closeEvalSuccessModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <div class="flex flex-col items-center justify-center py-4">
+      <span class="material-icons text-green-400 text-5xl mb-2">check_circle</span>
+      <div class="text-green-400 text-lg font-semibold mb-2">Avaliação enviada com sucesso!</div>
+      <div class="text-gray-300 text-sm text-center mb-4">O aluno será notificado por e-mail com a nota e o feedback.</div>
+      <button (click)="closeEvalSuccessModal()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all mt-2">Fechar</button>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal de Sucesso Avaliação -->
+
+<app-loading-modal
+  [show]="showLoadingModal"
+  [status]="loadingStatus">
+</app-loading-modal>
+
+<!-- Adicionar o modal de alunos no final do arquivo -->
+<div *ngIf="showStudentsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-medium text-gray-900">
+        Alunos - {{ selectedTask?.title }}
+      </h3>
+      <button (click)="closeStudentsModal()" class="text-gray-400 hover:text-gray-500">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              E-mail do Aluno
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let student of selectedTaskStudents">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ student.email }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + getSubmissionStatusClass(student.submission)">
+                {{ getSubmissionStatus(student.submission) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Erro de Edição -->
+<div *ngIf="showEditErrorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="showEditErrorModal = false" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <div class="flex flex-col items-center justify-center py-4">
+      <span class="material-icons text-red-400 text-5xl mb-2">error</span>
+      <div class="text-red-400 text-lg font-semibold mb-2">Erro ao editar tarefa</div>
+      <div class="text-gray-300 text-sm text-center mb-4">{{ editErrorModalMessage }}</div>
+      <button (click)="showEditErrorModal = false" class="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:from-red-700 hover:to-pink-700 transition-all mt-2">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Erro de Exclusão -->
+<div *ngIf="showDeleteErrorModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-[#232b3e] rounded-xl shadow-lg p-8 w-full max-w-md relative">
+    <button (click)="showDeleteErrorModal = false" class="absolute top-2 right-2 text-gray-400 hover:text-white"><span class="material-icons">close</span></button>
+    <div class="flex flex-col items-center justify-center py-4">
+      <span class="material-icons text-red-400 text-5xl mb-2">error</span>
+      <div class="text-red-400 text-lg font-semibold mb-2">Erro ao excluir tarefa</div>
+      <div class="text-gray-300 text-sm text-center mb-4">{{ deleteErrorModalMessage }}</div>
+      <button (click)="showDeleteErrorModal = false" class="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:from-red-700 hover:to-pink-700 transition-all mt-2">Fechar</button>
+    </div>
+  </div>
+</div>
