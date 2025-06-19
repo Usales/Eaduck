@@ -1,5 +1,31 @@
 # EaDuck: Plataforma de Gestão e Comunicação Escolar 🦆📚
 
+---
+
+## 🚀 Novidade!
+Agora o backend do EaDuck está rodando 100% online, utilizando o banco de dados Supabase (PostgreSQL Cloud). Isso significa que você pode hospedar o frontend em qualquer lugar e acessar o sistema de qualquer dispositivo, sem depender de banco local!
+
+---
+
+## Requisitos para rodar o software
+
+### Backend
+- Java JDK 17+
+- Maven 3.9+
+- Acesso à internet (para conectar ao Supabase)
+
+### Frontend
+- Node.js 18+
+- NPM 9+
+- Acesso à internet
+
+### Banco de Dados
+- **Supabase (PostgreSQL Cloud)** já configurado e integrado ao projeto
+
+---
+
+# EaDuck: Plataforma de Gestão e Comunicação Escolar 🦆📚
+
 Bem-vindo ao **EaDuck**, uma solução digital inovadora para revolucionar a gestão escolar! Desenvolvida como projeto de conclusão do curso de Engenharia de Software na **FATESG SENAI**, a EaDuck conecta alunos, pais, professores e gestores em um ambiente integrado, promovendo comunicação eficiente, acompanhamento acadêmico e acesso fácil a recursos educacionais. 🚀
 
 ## Sobre o Projeto 🌟
@@ -36,8 +62,8 @@ Construímos a EaDuck com ferramentas modernas para garantir desempenho, escalab
 | **Camada** | **Tecnologia** | **Finalidade** |
 |------------|----------------|----------------|
 | Front-end | Angular, TypeScript, TailwindCSS, SCSS | Interface dinâmica e responsiva |
-| Back-end | Java | Lógica de negócios e APIs |
-| Banco de Dados | PostgreSQL | Armazenamento relacional de dados |
+| Back-end | Java, Spring Boot | Lógica de negócios e APIs |
+| Banco de Dados | Supabase (PostgreSQL Cloud) | Armazenamento relacional de dados online |
 | Design | Figma | Prototipagem de interfaces intuitivas |
 
 ## Equipe 💪
@@ -58,7 +84,8 @@ Quer explorar a EaDuck? Siga os passos abaixo para configurar o projeto localmen
 1. **Pré-requisitos**:
    - Node.js (para Angular)
    - Java JDK 17+ (para back-end)
-   - PostgreSQL 15+
+   - Maven 3.9+
+   - Acesso à internet
    - Figma (para visualizar protótipos)
 
 2. **Instalação**:
@@ -73,9 +100,6 @@ Quer explorar a EaDuck? Siga os passos abaixo para configurar o projeto localmen
    # Configure o back-end
    cd ../backend
    mvn install
-
-   # Configure o banco de dados
-   psql -U postgres -f schema.sql
    ```
 
 3. **Rodando a Aplicação**:

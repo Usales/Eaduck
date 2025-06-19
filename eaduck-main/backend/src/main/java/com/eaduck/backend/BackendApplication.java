@@ -27,6 +27,7 @@ public class BackendApplication {
 					.password(passwordEncoder.encode("admin123"))
 					.role(Role.ADMIN)
 					.isActive(true)
+					.name("Admin")
 					.build();
 				userRepository.save(admin);
 				System.out.println("Usuário administrador padrão criado: " + adminEmail);
