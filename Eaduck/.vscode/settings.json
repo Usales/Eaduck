@@ -1,0 +1,8 @@
+{
+<<<<<<< HEAD
+    "java.compile.nullAnalysis.mode": "disabled",
+    "git.ignoreLimitWarning": true
+=======
+    "java.compile.nullAnalysis.mode": "automatic"
+>>>>>>> cddb71ee8638fa7df82d6cd304a2b628a38a7d5a
+}

@@ -1,0 +1,3 @@
+ALTER TABLE submissions ADD COLUMN grade DOUBLE PRECISION;
+ALTER TABLE submissions ADD COLUMN feedback TEXT;
+ALTER TABLE submissions ADD COLUMN evaluated_at TIMESTAMP;
