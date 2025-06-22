@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ModalComponent } from '../../components/modal/modal.component';
 import { AuthService } from '../../auth.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -9,7 +9,7 @@ import { HttpClientModule } from '@angular/common/http';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent, HttpClientModule],
+  imports: [CommonModule, FormsModule, RouterModule, ModalComponent, HttpClientModule],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
